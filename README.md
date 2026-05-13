@@ -27,6 +27,7 @@ A fully offline multilingual phrase cheatsheet and service charge calculator for
 - Italian
 - German
 - Spanish
+- Portuguese
 
 ## Local Development
 
