@@ -1,0 +1,21 @@
+{
+  "name": "frontdesk-phrase-deck",
+  "version": "0.1.0",
+  "description": "A fully offline multilingual phrase cheatsheet and service charge calculator for hotel front desk teams.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "build:file": "vite build && node scripts/build-file.js",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.9",
+    "marked": "^15.0.12"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5",
+    "vite-plugin-singlefile": "^2.3.0"
+  }
+}
