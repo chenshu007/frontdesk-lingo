@@ -58,7 +58,7 @@ button {
 
 #app {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -66,23 +66,54 @@ button {
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow: hidden;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 24px;
-  padding: 24px 18px;
-  border-right: 1px solid var(--accent-dim);
-  background: linear-gradient(180deg, rgba(5, 5, 16, 0.98), rgba(3, 3, 18, 0.97));
-  box-shadow: 8px 0 24px rgba(0, 0, 0, 0.45);
+  gap: 20px;
+  padding: 24px 16px 18px;
+  border-right: 1px solid rgba(232, 248, 255, 0.32);
+  background:
+    radial-gradient(circle at 18% 9%, rgba(0, 212, 232, 0.34), transparent 9.5rem),
+    radial-gradient(circle at 102% 44%, rgba(20, 185, 255, 0.2), transparent 12rem),
+    repeating-linear-gradient(114deg, rgba(255, 255, 255, 0.075) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(0deg, transparent 0 5px, rgba(232, 248, 255, 0.035) 6px 7px),
+    linear-gradient(180deg, rgba(5, 10, 38, 0.98), rgba(2, 4, 24, 0.98));
+  box-shadow: 10px 0 28px rgba(0, 0, 0, 0.48), inset -1px 0 0 rgba(0, 212, 232, 0.36);
+}
+
+.sidebar::before,
+.sidebar::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+.sidebar::before {
+  opacity: 0.46;
+  background:
+    linear-gradient(90deg, transparent 0 74%, rgba(255, 255, 255, 0.13) 74% 75%, transparent 75%),
+    radial-gradient(circle at 42% 26%, rgba(255, 255, 255, 0.12), transparent 8rem);
+  mix-blend-mode: screen;
+}
+
+.sidebar::after {
+  opacity: 0.22;
+  background-image:
+    linear-gradient(135deg, transparent 0 46%, rgba(0, 212, 232, 0.18) 46% 47%, transparent 47% 100%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 4px);
 }
 
 .sidebar-header {
   position: relative;
-  padding: 18px 16px;
-  border: 3px solid #fff;
-  color: #fff;
+  z-index: 1;
+  padding: 16px 18px;
+  border: 2px solid #fff;
+  color: var(--p3-navy);
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0.96) 0 72%, rgba(232, 248, 255, 0.86) 72% 100%);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  box-shadow: var(--glow);
-  transform: skew(-7deg);
+  box-shadow: 0 0 0 1px rgba(0, 212, 232, 0.38), 0 0 18px rgba(0, 212, 232, 0.58), 8px 8px 0 rgba(0, 29, 255, 0.42);
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 18px) 100%, 0 100%, 0 12px);
 }
 
 .sidebar-header span,
@@ -93,72 +124,141 @@ button {
 
 .sidebar-header span {
   font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
 }
 
 .sidebar-header strong {
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--text-primary);
+  margin-top: 7px;
+  color: var(--p3-blue);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .nav-list {
+  position: relative;
+  z-index: 1;
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: 8px;
+  padding: 4px 0;
 }
 
 .nav-item {
   position: relative;
   width: 100%;
-  min-height: 58px;
-  padding: 10px 12px 10px 18px;
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 9px 13px 9px 12px;
   border: 2px solid transparent;
   border-radius: 0;
-  color: #fff;
+  color: rgba(232, 248, 255, 0.9);
   background: transparent;
   text-align: left;
+  isolation: isolate;
+  transition: color 160ms ease, transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .nav-item::before {
   content: "";
   position: absolute;
-  inset: 8px auto 8px 0;
-  width: 3px;
-  background: transparent;
+  inset: 10px auto 10px 0;
+  z-index: -1;
+  width: 4px;
+  background: rgba(0, 212, 232, 0);
   box-shadow: none;
+  transition: background 160ms ease, box-shadow 160ms ease;
 }
 
-.nav-item:hover,
+.nav-item::after {
+  content: "";
+  position: absolute;
+  inset: 3px 4px 3px 0;
+  z-index: -2;
+  opacity: 0;
+  transform: translateX(-18px);
+  background: linear-gradient(100deg, rgba(0, 29, 255, 0.48), rgba(0, 212, 232, 0.14) 78%);
+  clip-path: polygon(14px 0, 100% 0, calc(100% - 18px) 100%, 0 100%, 0 14px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
 .nav-item.active {
-  border-color: rgba(255, 255, 255, 0.72);
-  background: linear-gradient(90deg, rgba(0, 29, 255, 0.78), rgba(0, 212, 232, 0.12) 78%);
-  color: var(--text-primary);
-  transform: skew(-8deg);
+  border-color: #fff;
+  color: #fff;
+  background:
+    linear-gradient(100deg, rgba(0, 29, 255, 0.96) 0 66%, rgba(0, 212, 232, 0.38) 100%);
+  box-shadow: 0 0 0 1px rgba(0, 212, 232, 0.55), 0 0 18px rgba(0, 212, 232, 0.72), 7px 7px 0 rgba(0, 0, 0, 0.56);
+  clip-path: polygon(15px 0, 100% 0, calc(100% - 22px) 100%, 0 100%, 0 15px);
+  transform: translateX(4px);
+}
+
+.nav-item:hover:not(.active) {
+  color: #fff;
+  transform: translateX(5px);
+}
+
+.nav-item:hover:not(.active)::after {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .nav-item.active::before {
   background: var(--accent);
-  box-shadow: var(--glow);
+  box-shadow: 0 0 10px rgba(0, 212, 232, 0.95), 0 0 20px rgba(0, 212, 232, 0.52);
 }
 
-.nav-item span {
+.nav-index {
+  color: var(--p3-cyan);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 10px rgba(0, 212, 232, 0.8);
+}
+
+.nav-copy {
+  display: block;
+  min-width: 0;
+}
+
+.nav-label {
   display: block;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
   line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-item small {
   display: block;
-  margin-top: 5px;
-  font-size: 14px;
+  margin-top: 4px;
+  font-size: 12px;
   color: currentColor;
-  opacity: 0.75;
+  opacity: 0.66;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item.active small {
+  opacity: 0.86;
 }
 
 .sidebar-footer {
-  padding: 12px 4px 0;
-  border-top: 1px solid rgba(0, 212, 232, 0.28);
+  position: relative;
+  z-index: 1;
+  padding: 12px 6px 0;
+  border-top: 1px solid rgba(232, 248, 255, 0.24);
   color: var(--text-secondary);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 10px;

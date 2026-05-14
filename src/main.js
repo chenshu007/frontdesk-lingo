@@ -48,12 +48,18 @@ app.innerHTML = `
 const nav = app.querySelector(".nav-list");
 const root = app.querySelector("#tool-root");
 
-tools.forEach((tool) => {
+tools.forEach((tool, index) => {
   const button = document.createElement("button");
   button.className = "nav-item";
   button.type = "button";
   button.dataset.tool = tool.id;
-  button.innerHTML = `<span>${tool.label}</span><small>${tool.sub}</small>`;
+  button.innerHTML = `
+    <span class="nav-index">${String(index + 1).padStart(2, "0")}</span>
+    <span class="nav-copy">
+      <span class="nav-label">${tool.label}</span>
+      <small>${tool.sub}</small>
+    </span>
+  `;
   button.addEventListener("click", () => activate(tool.id));
   nav.append(button);
 });
