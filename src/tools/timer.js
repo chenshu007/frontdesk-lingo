@@ -1,3 +1,5 @@
+import { getConfig, setConfig } from "../config.js";
+
 const QUOTES = [
   "Memento Mori.",
   "你无法逃脱上班这件事。",
@@ -11,13 +13,11 @@ const QUOTES = [
   "下班前一小时，世界开始发蓝。"
 ];
 
-const KEY = "frontdesk_dark_hour_settings";
-
 export function render(container) {
-  const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+  const config = getConfig();
   const state = {
-    start: saved.start || "09:00",
-    end: saved.end || "18:00"
+    start: config.darkHourStart,
+    end: config.darkHourEnd
   };
 
   container.innerHTML = `
@@ -64,10 +64,23 @@ export function render(container) {
   container.querySelectorAll("[data-time]").forEach((input) => {
     input.addEventListener("change", () => {
       state[input.dataset.time] = input.value;
-      localStorage.setItem(KEY, JSON.stringify(state));
+      setConfig({
+        darkHourStart: state.start,
+        darkHourEnd: state.end
+      });
       update();
     });
   });
+
+  function handleConfigChange(event) {
+    state.start = event.detail.darkHourStart;
+    state.end = event.detail.darkHourEnd;
+    container.querySelector('[data-time="start"]').value = state.start;
+    container.querySelector('[data-time="end"]').value = state.end;
+    update();
+  }
+
+  window.addEventListener("moyu-config-change", handleConfigChange);
 
   let lastMinute = -1;
   function parseToday(value) {
@@ -186,5 +199,8 @@ export function render(container) {
 
   update();
   const timer = window.setInterval(update, 1000);
-  return () => window.clearInterval(timer);
+  return () => {
+    window.clearInterval(timer);
+    window.removeEventListener("moyu-config-change", handleConfigChange);
+  };
 }
