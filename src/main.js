@@ -45,18 +45,19 @@ const tools = [
 ];
 
 const app = document.querySelector("#app");
+const BOOT_SESSION_KEY = "moyu_boot_intro_seen";
 let cleanup = null;
 
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-async function typeBootLine(line, text) {
+async function typeBootLine(line, text, speed = 8) {
   const output = line.querySelector("[data-boot-text]");
   line.classList.add("active");
   for (const char of text) {
     output.textContent += char;
-    await wait(40);
+    await wait(speed);
   }
   line.classList.remove("active");
 }
@@ -65,8 +66,9 @@ async function runBootIntro() {
   const config = getConfig();
   const overlay = document.createElement("div");
   overlay.className = "boot-intro";
+  overlay.setAttribute("aria-hidden", "true");
   overlay.innerHTML = `
-    <div class="boot-terminal" aria-label="System boot status">
+    <div class="boot-terminal">
       <div class="boot-line"><span data-boot-text></span><span class="boot-cursor" aria-hidden="true">|</span></div>
       <div class="boot-line"><span data-boot-text></span><span class="boot-cursor" aria-hidden="true">|</span></div>
       <div class="boot-line"><span data-boot-text></span><span class="boot-cursor" aria-hidden="true">|</span></div>
@@ -77,16 +79,29 @@ async function runBootIntro() {
   const lines = [...overlay.querySelectorAll(".boot-line")];
 
   await typeBootLine(lines[0], "S.E.E.S. SYSTEM ONLINE");
-  await wait(400);
+  await wait(80);
   await typeBootLine(lines[1], "DARK HOUR PROTOCOL INITIALIZING...");
-  await wait(300);
+  await wait(80);
   await typeBootLine(lines[2], `UNIT: ${config.unitName.toUpperCase()} — AUTHENTICATED`);
-  await wait(500);
+  await wait(120);
   overlay.classList.add("sweeping");
-  await wait(300);
+  await wait(220);
   overlay.classList.add("fade-out");
-  await wait(400);
+  await wait(220);
   overlay.remove();
+}
+
+function shouldRunBootIntro() {
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  return !reducedMotion && sessionStorage.getItem(BOOT_SESSION_KEY) !== "1";
+}
+
+function scheduleBootIntro() {
+  if (!shouldRunBootIntro()) return;
+  sessionStorage.setItem(BOOT_SESSION_KEY, "1");
+  window.setTimeout(() => {
+    runBootIntro().catch(() => {});
+  }, 250);
 }
 
 function renderApp() {
@@ -145,10 +160,10 @@ function activate(id, nav, root) {
   localStorage.setItem("frontdesk_active_tool", selected.id);
 }
 
-async function start() {
+function start() {
   applyConfig();
-  await runBootIntro();
   renderApp();
+  scheduleBootIntro();
 }
 
 function updateShellConfig(config = getConfig()) {
