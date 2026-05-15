@@ -30,8 +30,8 @@ let cleanup = null;
 app.innerHTML = `
   <aside class="sidebar">
     <div class="sidebar-header">
-      <span>FRONTDESK PHRASE DECK</span>
-      <strong>OFFLINE HOTEL TOOLKIT</strong>
+      <span>S.E.E.S. SYSTEM</span>
+      <strong>UNIT: MAVERICK</strong>
     </div>
     <nav class="nav-list" aria-label="工具导航"></nav>
     <div class="sidebar-footer">
