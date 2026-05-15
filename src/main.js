@@ -128,15 +128,19 @@ function renderApp() {
   const nav = app.querySelector(".nav-list");
   const root = app.querySelector("#tool-root");
 
-  tools.forEach((tool) => {
+  tools.forEach((tool, index) => {
     const button = document.createElement("button");
     button.className = `nav-item${tool.separated ? " nav-item-separated" : ""}`;
     button.type = "button";
     button.dataset.tool = tool.id;
     button.innerHTML = `
-      ${tool.icon ? `<span class="nav-icon">${tool.icon}</span>` : ""}
-      <span>${tool.label}</span>
-      <small data-sub-label>${config.displayLanguage === "en" ? tool.subEn : tool.subZh}</small>
+      <span class="nav-index">
+        ${tool.icon ? `<span class="nav-icon">${tool.icon}</span>` : String(index + 1).padStart(2, "0")}
+      </span>
+      <span class="nav-copy">
+        <span class="nav-label">${tool.label}</span>
+        <small data-sub-label>${config.displayLanguage === "en" ? tool.subEn : tool.subZh}</small>
+      </span>
     `;
     button.addEventListener("click", () => activate(tool.id, nav, root));
     nav.append(button);
