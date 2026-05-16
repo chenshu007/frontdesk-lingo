@@ -1108,6 +1108,22 @@ blockquote {
   width: min(420px, 100%);
 }
 
+.config-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.config-save-state {
+  min-height: 18px;
+  font-size: 12px;
+}
+
+.p3-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .segmented-control {
   display: flex;
   flex-wrap: wrap;

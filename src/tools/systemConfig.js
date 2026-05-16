@@ -2,6 +2,7 @@ import { getConfig, setConfig } from "../config.js";
 
 export function render(container) {
   let config = getConfig();
+  let draft = { ...config };
 
   container.innerHTML = `
     <section class="tool-screen system-config-screen">
@@ -40,6 +41,11 @@ export function render(container) {
           </label>
         </section>
 
+        <section class="config-section config-actions">
+          <button class="p3-button primary" type="button" data-save-config>SAVE SETTINGS</button>
+          <span class="config-save-state muted" data-config-save-state></span>
+        </section>
+
         <section class="config-section danger-zone">
           <h2 class="nav-section-label">DANGER ZONE</h2>
           <button class="p3-button danger" type="button" data-clear-moyu>Clear all data</button>
@@ -51,22 +57,59 @@ export function render(container) {
   const unitInput = container.querySelector('[data-config="unitName"]');
   const startInput = container.querySelector('[data-config="darkHourStart"]');
   const endInput = container.querySelector('[data-config="darkHourEnd"]');
+  const saveButton = container.querySelector("[data-save-config]");
+  const saveState = container.querySelector("[data-config-save-state]");
 
   function syncControls(next = getConfig()) {
     config = next;
+    draft = { ...next };
     container.querySelectorAll("[data-language]").forEach((button) => {
-      button.classList.toggle("active", button.dataset.language === config.displayLanguage);
+      button.classList.toggle("active", button.dataset.language === draft.displayLanguage);
     });
-    if (document.activeElement !== unitInput) unitInput.value = config.unitName;
-    if (document.activeElement !== startInput) startInput.value = config.darkHourStart;
-    if (document.activeElement !== endInput) endInput.value = config.darkHourEnd;
+    if (document.activeElement !== unitInput) unitInput.value = draft.unitName;
+    if (document.activeElement !== startInput) startInput.value = draft.darkHourStart;
+    if (document.activeElement !== endInput) endInput.value = draft.darkHourEnd;
+    updateSaveState("SAVED", false);
   }
 
-  unitInput.addEventListener("input", () => setConfig({ unitName: unitInput.value }));
-  startInput.addEventListener("change", () => setConfig({ darkHourStart: startInput.value }));
-  endInput.addEventListener("change", () => setConfig({ darkHourEnd: endInput.value }));
+  function updateSaveState(label, dirty = true) {
+    saveState.textContent = label;
+    saveButton.disabled = !dirty;
+  }
+
+  function markDirty() {
+    updateSaveState("UNSAVED CHANGES");
+  }
+
+  unitInput.addEventListener("input", () => {
+    draft.unitName = unitInput.value;
+    markDirty();
+  });
+  startInput.addEventListener("input", () => {
+    draft.darkHourStart = startInput.value;
+    markDirty();
+  });
+  endInput.addEventListener("input", () => {
+    draft.darkHourEnd = endInput.value;
+    markDirty();
+  });
   container.querySelectorAll("[data-language]").forEach((button) => {
-    button.addEventListener("click", () => setConfig({ displayLanguage: button.dataset.language }));
+    button.addEventListener("click", () => {
+      draft.displayLanguage = button.dataset.language;
+      container.querySelectorAll("[data-language]").forEach((item) => {
+        item.classList.toggle("active", item.dataset.language === draft.displayLanguage);
+      });
+      markDirty();
+    });
+  });
+  saveButton.addEventListener("click", () => {
+    const saved = setConfig({
+      unitName: unitInput.value,
+      displayLanguage: draft.displayLanguage,
+      darkHourStart: startInput.value,
+      darkHourEnd: endInput.value
+    });
+    syncControls(saved);
   });
   container.querySelector("[data-clear-moyu]").addEventListener("click", () => {
     if (!window.confirm("Clear all moyu_ data?")) return;
