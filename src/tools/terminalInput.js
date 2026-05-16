@@ -38,6 +38,8 @@ export function render(container) {
   let totalTyped = 0;
   let correctTyped = 0;
   let completedChars = 0;
+  let isComposing = false;
+  let acceptedValue = "";
 
   container.innerHTML = `
     <section class="tool-screen terminal-screen">
@@ -88,6 +90,8 @@ export function render(container) {
     totalTyped = 0;
     correctTyped = 0;
     completedChars = 0;
+    isComposing = false;
+    acceptedValue = "";
     summary.hidden = true;
     input.disabled = false;
     input.value = "";
@@ -120,27 +124,32 @@ export function render(container) {
     input.classList.add("wrong");
   }
 
-  function onInput() {
-    const expected = currentLine();
-    const value = input.value;
-    const lastIndex = value.length - 1;
-    if (lastIndex >= 0) {
-      totalTyped += 1;
-      if (value[lastIndex] === expected[lastIndex]) {
+  function countNewCharacters(previous, value, expected) {
+    if (value.length <= previous.length || !value.startsWith(previous)) return;
+    const added = value.slice(previous.length);
+    totalTyped += added.length;
+    for (let index = 0; index < added.length; index += 1) {
+      if (added[index] === expected[previous.length + index]) {
         correctTyped += 1;
-      } else {
-        flashWrong();
       }
     }
+  }
+
+  function validateInput(value) {
+    const expected = currentLine();
+    countNewCharacters(acceptedValue, value, expected);
     if (!expected.startsWith(value)) {
-      input.value = value.slice(0, -1);
+      input.value = acceptedValue;
+      flashWrong();
       updateStats();
       return;
     }
-    if (input.value === expected) {
+    acceptedValue = value;
+    if (value === expected) {
       completedChars += expected.length;
       lineIndex += 1;
       input.value = "";
+      acceptedValue = "";
       if (lineIndex >= 10) {
         const result = updateStats();
         input.disabled = true;
@@ -153,13 +162,31 @@ export function render(container) {
     updateStats();
   }
 
+  function onInput(event) {
+    if (isComposing || event.isComposing) return;
+    validateInput(input.value);
+  }
+
+  function onCompositionStart() {
+    isComposing = true;
+  }
+
+  function onCompositionEnd() {
+    isComposing = false;
+    validateInput(input.value);
+  }
+
   const resetButton = container.querySelector("[data-reset]");
   input.addEventListener("input", onInput);
+  input.addEventListener("compositionstart", onCompositionStart);
+  input.addEventListener("compositionend", onCompositionEnd);
   resetButton.addEventListener("click", reset);
   reset();
 
   return () => {
     input.removeEventListener("input", onInput);
+    input.removeEventListener("compositionstart", onCompositionStart);
+    input.removeEventListener("compositionend", onCompositionEnd);
     resetButton.removeEventListener("click", reset);
   };
 }
