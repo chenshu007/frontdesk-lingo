@@ -114,10 +114,6 @@ function renderApp() {
         <strong data-unit-name>UNIT: ${config.unitName.toUpperCase()}</strong>
       </div>
       <nav class="nav-list" aria-label="工具导航"></nav>
-      <div class="sidebar-footer">
-        <span>LOCAL ONLY</span>
-        <span>NO NETWORK REQUESTS</span>
-      </div>
     </aside>
     <main class="workspace">
       <div class="scanline"></div>
