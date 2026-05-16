@@ -125,7 +125,7 @@ export function render(container) {
           .filter((note) => note && note.id)
           .map((note) => ({
             id: String(note.id),
-            title: note.title || "Untitled note",
+            title: noteTitle(note.title, note.createdAt),
             createdAt: note.createdAt || new Date().toISOString(),
             updatedAt: note.updatedAt || note.createdAt || new Date().toISOString()
           }))
@@ -171,6 +171,20 @@ export function render(container) {
       hour: "2-digit",
       minute: "2-digit"
     })}`;
+  }
+
+
+
+  function formatDateTitle(value = new Date()) {
+    const d = value instanceof Date ? value : new Date(value);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}/${month}/${day}`;
+  }
+
+  function noteTitle(value, fallbackDate = new Date()) {
+    return String(value || "").trim() || formatDateTitle(fallbackDate);
   }
 
   function updateSaveState(label) {
@@ -247,7 +261,7 @@ export function render(container) {
     }
     const payload = JSON.parse(localStorage.getItem(noteKey(id)) || "null");
     selectedId = id;
-    titleInput.value = note.title || "Untitled note";
+    titleInput.value = noteTitle(note.title, note.createdAt);
     created.textContent = formatCreated(note.createdAt);
     text.value = payload ? await decrypt(payload) : "";
     preview.innerHTML = marked.parse(text.value);
@@ -271,7 +285,7 @@ export function render(container) {
     const now = new Date().toISOString();
     const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
     const index = readIndex();
-    index.notes.unshift({ id, title: "Untitled note", createdAt: now, updatedAt: now });
+    index.notes.unshift({ id, title: formatDateTitle(), createdAt: now, updatedAt: now });
     writeIndex(index);
     localStorage.setItem(noteKey(id), JSON.stringify(await encrypt(content)));
     await selectNote(id);
@@ -290,7 +304,7 @@ export function render(container) {
     const index = readIndex();
     const migrated = index.notes.find((note) => note.id === selectedId);
     if (migrated) {
-      migrated.title = "Secret Notes";
+      migrated.title = formatDateTitle(migrated.createdAt);
       writeIndex(index);
     }
     localStorage.removeItem(LEGACY_DATA_KEY);
@@ -312,12 +326,19 @@ export function render(container) {
     try {
       if (!password.value) return;
       let salt = localStorage.getItem(SALT_KEY);
-      if (!salt) {
+      const hasExistingData = hasJournalVault();
+      let key = null;
+      if (salt) {
+        key = await deriveKey(password.value, unb64(salt));
+      } else if (hasExistingData) {
+        const legacySalt = await crypto.subtle.digest("SHA-256", enc.encode("frontdesk-journal-v2"));
+        key = await deriveKey(password.value, legacySalt.slice(0, 16));
+      } else {
         const saltBytes = crypto.getRandomValues(new Uint8Array(16));
         salt = b64(saltBytes);
         localStorage.setItem(SALT_KEY, salt);
+        key = await deriveKey(password.value, saltBytes);
       }
-      const key = await deriveKey(password.value, unb64(salt));
       await migrateLegacyNote(key);
       unlockedKey = key;
       sessionKey = key;
@@ -327,6 +348,10 @@ export function render(container) {
         const firstNote = readIndex().notes[0];
         const payload = JSON.parse(localStorage.getItem(noteKey(firstNote.id)) || "null");
         if (payload) await decrypt(payload, key);
+      }
+      if (!localStorage.getItem(SALT_KEY)) {
+        const legacySalt = await crypto.subtle.digest("SHA-256", enc.encode("frontdesk-journal-v2"));
+        localStorage.setItem(SALT_KEY, b64(legacySalt.slice(0, 16)));
       }
       await showEditor();
     } catch {
@@ -389,7 +414,7 @@ export function render(container) {
     const index = readIndex();
     const current = index.notes.find((note) => note.id === selectedId);
     if (!current) return;
-    current.title = titleInput.value.trim() || "Untitled note";
+    current.title = noteTitle(titleInput.value, current.createdAt);
     current.updatedAt = new Date().toISOString();
     writeIndex(index);
     const activeRow = noteList.querySelector(`.journal-note-item[data-note-id="${CSS.escape(selectedId)}"]`);
